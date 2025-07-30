@@ -271,3 +271,48 @@ def close(request):
             return redirect(reverse('auctions:listing_page', kwargs={"auction_id": auction_id}))
 
     return redirect("/")
+
+
+def categories(request):
+    categories = [
+        "Electronics",
+        "Fashion",
+        "Home & Garden",
+        "Toys & Games",
+        "Art & Collectibles",
+        "Sports Equipment",
+        "Antiques & Vintage",
+        "Furniture",
+        "Jewelry & Watches",
+        "Vehicles",
+        "Books & Magazines",
+        "Music Instruments",
+        "Tickets & Experiences",
+        "Real Estate",
+        "Pets & Animals",
+        "Business & Industrial",
+        "Health & Beauty",
+        "Food & Beverage",
+        "Crafts & DIY",
+        "Miscellaneous"
+    ]
+    return render(request, "auctions/categories.html", {
+        "auctions": Auctions.objects.all(),
+        "categories": categories,
+    })
+
+
+def category(request, category):
+    auctions = Auctions.objects.all()
+
+    required_auctions = []
+
+    for auction in auctions:
+        auction_categories = auction.item_category
+        if category in auction_categories:
+            required_auctions.append(auction)
+
+    return render(request, "auctions/category.html", {
+        "required_auctions": required_auctions,
+        "category": category,
+    })

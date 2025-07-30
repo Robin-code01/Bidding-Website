@@ -19,6 +19,9 @@
         <ul class="nav">
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'auctions:index' %}">Active Listings</a>
+            </li> 
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'auctions:categories' %}">Categories</a>
             </li>
             {% if user.is_authenticated %}
                 <li class="nav-item">
@@ -36,7 +39,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'auctions:register' %}">Register</a>
-                </li>
+                </li>   
             {% endif %}
         </ul>
         <hr>
