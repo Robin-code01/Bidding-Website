@@ -17,7 +17,7 @@ class Auctions(models.Model):
     item_image = models.CharField(
         max_length=10000, blank=True, null=True, default=None
     )
-    item_category = models.CharField(max_length=1000, blank=True, null=True, default=None)
+    item_category = models.JSONField(blank=True, default=list)
     item_name = models.CharField(max_length=1000, default="No Name")
     item_description = models.CharField(max_length=10000, default="None")
     starting_bid = models.FloatField()
@@ -60,7 +60,7 @@ class Bids(models.Model):
 
 class Comments(models.Model):
     commment_id = models.BigAutoField(primary_key=True)
-    auction_id = models.ForeignKey(
+    auction = models.ForeignKey(
         Auctions, on_delete=models.CASCADE, related_name="auction_comments"
     )
     comment_by = models.ForeignKey(
@@ -69,4 +69,4 @@ class Comments(models.Model):
     comment_content = models.CharField(max_length=10000)
 
     def __str__(self):
-        return f"{self.commment_id}: {self.comment_by} commented on {self.auction_id} that \"{self.comment_content}\""
+        return f"{self.commment_id}: {self.comment_by} commented on {self.auction_id}:\n \"{self.comment_content}\""

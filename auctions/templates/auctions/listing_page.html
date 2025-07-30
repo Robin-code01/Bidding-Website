@@ -24,7 +24,7 @@
   </ul>
 {% endif %}
 
-{% if a not in user.watchlist %}
+{% if a not in user.watchlist.all %}
 <form action="{% url 'auctions:watchlist' %}" method="post">
   {% csrf_token %}
   <input type="submit" name="add_watchlist" value="Add To Watchlist">
@@ -32,7 +32,7 @@
 </form>
 {% endif %}
 
-{% if a in user.watchlist %}
+{% if a in user.watchlist.all %}
 <form action="{% url 'auctions:watchlist' %}" method="post">
   {% csrf_token %}
   <input type="submit" name="remove_watchlist" value="Remove From Watchlist">
@@ -60,15 +60,42 @@
   <p><strong>Item "{{ a.item_name }}" sold by user {{ a.listed_by }} at the price of ${{ a.current_bid }} to user {{ a.sold_to }}</strong></p>
 {% endif %}
 
-<form>
-  {% csrf_token %} 
-        <div class="form-group">
-            <label for="comment">Comment:</label>
-            <textarea class="form-control" id="comment" name="comment" placeholder="Write your comment here..." rows="4"></textarea>
-        </div>
-        <input type="submit" name="submit" class="btn btn-primary" value="Comment"> 
-</form>
+{% if user.is_authenticated %}
+  <form method="post" action="comment">
+    {% csrf_token %} 
+    <div class="form-group"
+        <label for="comment">Comment:</label>
+        <textarea class="form-control" name="comment_content" placeholder="Write your comment here..." rows="4"></textarea>
+    </div>
+    <input type="submit" name="submit" class="btn btn-primary" value="Comment">
+    <input type="hidden" name="auction_id" value="{{ a.auction_id }}">
+  </form>
 
+  {% if a.sold_to == user and a.status == "Sold" %}
+  <h2><strong>Congratulations!!</strong> You have Won this bid!</h2>
+  {% endif %}
 
+  {% if a.listed_by == user and a.status != "Sold" %}
+-----------------------------|
+  <form method="post" action="close">
+    {% csrf_token %}
+    <input type="submit" name="close_bid" value="Close Bid" class="btn btn-primary">
+    <input type="hidden" name="auction_id" value="{{ a.auction_id }}">
+  </form>
+-----------------------------|
+  {% endif %}
+{% endif %}
 
-{% endblock%}
+{% if message_comment %}
+<p>{{ message_comment }}</p>
+{% endif %}
+
+{% if comments %}
+<ul>
+{% for comment in comments %}
+  <li class = "comments"><strong>{{ comment.comment_by }}</strong> commented: <textarea readonly rows="" cols="">{{ comment.comment_content }}</textarea> </li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% endblock %}

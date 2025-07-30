@@ -42,6 +42,29 @@ def logout_view(request):
 
 @login_required
 def new_listing(request):
+    categories = [
+        "Electronics",
+        "Fashion",
+        "Home & Garden",
+        "Toys & Games",
+        "Art & Collectibles",
+        "Sports Equipment",
+        "Antiques & Vintage",
+        "Furniture",
+        "Jewelry & Watches",
+        "Vehicles",
+        "Books & Magazines",
+        "Music Instruments",
+        "Tickets & Experiences",
+        "Real Estate",
+        "Pets & Animals",
+        "Business & Industrial",
+        "Health & Beauty",
+        "Food & Beverage",
+        "Crafts & DIY",
+        "Miscellaneous"
+    ]
+
     if request.method == "POST":
         auction_name = request.POST["auction_name"]
         item_name = request.POST["item_name"]
@@ -49,7 +72,14 @@ def new_listing(request):
         starting_bid = request.POST["starting_bid"]
         item_image = request.POST["item_image"]
         status = request.POST["status"]
-        item_category = request.POST["item_category"]
+        item_category = request.POST.getlist("item_category[]")
+
+        for category in item_category:
+            if category not in categories:
+                return render(request, "auctions/new_listing.html", {
+                    "message": f"The category \"{category}\" is not defined"
+                })
+
         if status != "Sale":
             return render(request, "auctions/new_listing.html", {
                 "message": f"The status cam't be {status} while creating a new listing."
@@ -116,7 +146,7 @@ def register(request):
 
 
 def listing_page(request, auction_id):
-
+    comments = Comments.objects.all()
     auction = Auctions.objects.get(pk=auction_id)
     if request.method == "POST" and request.user:
 
@@ -125,7 +155,8 @@ def listing_page(request, auction_id):
         except Exception as e:
             return render(request, "auctions/listing_page.html", {
                 "a": auction,
-                "message_bid": f"Bid needs to be a number: {e}"
+                "message_bid": f"Bid needs to be a number: {e}",
+                "comments": comments,
             })
 
         if bid > auction.current_bid:
@@ -134,7 +165,8 @@ def listing_page(request, auction_id):
             auction.save()
             return render(request, "auctions/listing_page.html", {
                 "a": auction,
-                "message_bid": f"Bid of ${auction.current_bid} placed successfully!"
+                "message_bid": f"Bid of ${auction.current_bid} placed successfully!",
+                "comments": comments,
             })
 
         elif (bid == auction.current_bid and
@@ -143,23 +175,27 @@ def listing_page(request, auction_id):
             auction.save()
             return render(request, "auctions/listing_page.html", {
                 "a": auction,
-                "message_bid": f"Bid of ${auction.current_bid} placed successfully!"
+                "message_bid": f"Bid of ${auction.current_bid} placed successfully!",
+                "comments": comments,
             })
 
         else:
             return render(request, "auctions/listing_page.html", {
                 "a": auction,
-                "message_bid": f"Your bid must be higher than {auction.current_bid}"
+                "message_bid": f"Your bid must be higher than {auction.current_bid}",
+                "comments": comments,
             })
 
     elif request.method == "POST" and not request.user:
         return render(request, "auctions/listing_page.html", {
             "a": auction,
-            "message_bid": "The user must be loged in to interact with the listings."
+            "message_bid": "The user must be loged in to interact with the listings.",
+            "comments": comments,
         })
 
     return render(request, "auctions/listing_page.html", {
-        "a": auction
+        "a": auction,
+        "comments": comments,
     })
 
 
@@ -169,13 +205,69 @@ def watchlist(request):
         auction = Auctions.objects.get(pk=auction_id)
         if "add_watchlist" in request.POST:
             request.user.watchlist.add(auction)
-            messages.success(request, f"Added {auction.auction_name} to yout watchlist")
+            messages.success(request, f"Added {
+                             auction.auction_name} to yout watchlist")
             return redirect('auctions:listing_page', auction_id=auction.pk)
         elif "remove_watchlist" in request.POST:
             request.user.watchlist.remove(auction)
-            messages.success(request, f"Removed {auction.auction_name} to yout watchlist")
+            messages.success(request, f"Removed {
+                             auction.auction_name} to yout watchlist")
             return redirect('auctions:listing_page', auction_id=auction.pk)
 
     return render(request, "auctions/watchlist.html", {
         "wl": request.user.watchlist.all(),
     })
+
+
+def comment(request):
+    if request.method == "POST":
+        try:
+            auction_id = request.POST["auction_id"]
+            auction = Auctions.objects.get(pk=auction_id)
+            comment_by = request.user
+            comment_content = request.POST["comment_content"]
+
+            comment = Comments(
+                auction=auction,
+                comment_by=comment_by,
+                comment_content=comment_content,
+            )
+
+            comment.save()
+
+#            return render(request, "auctions/listing_page.html", {
+#                "a": auction,
+#                "message_comment": "Commented Successfully",
+#                "comments": Comments.objects.all(),
+#            })
+            messages.success(request, "Commented Successfuly")
+            return redirect(reverse('auctions:listing_page', kwargs={"auction_id": auction_id}))
+
+        except Exception as e:
+            #            return render(request, "auctions/listing_page.html", {
+            #                "a": auction,
+            #                "message_comment": f"Error: {e}",
+            #                "comments": Comments.objects.all(),
+            #            })
+            messages.error(request, f"Error: {e}")
+            return redirect(reverse('auctions:listing_page', kwargs={"auction_id": auction_id}))
+
+    return redirect("/")
+
+
+def close(request):
+    if request.method == "POST":
+        auction_id = request.POST["auction_id"]
+        auction = Auctions.objects.get(pk=auction_id)
+
+        if request.user == auction.listed_by:
+            auction.status = "Sold"
+            auction.sold_to = auction.current_bid_by
+            auction.save()
+            messages.success(request, "Bid Closed Successfully!")
+            return redirect(reverse('auctions:listing_page', kwargs={"auction_id": auction_id}))
+        else:
+            messages.error(request, "you thought you were so smort, ehh?")
+            return redirect(reverse('auctions:listing_page', kwargs={"auction_id": auction_id}))
+
+    return redirect("/")
