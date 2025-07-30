@@ -1,0 +1,39 @@
+{% extends "auctions/layout.html" %} {% block body %}
+
+<h1>{{ a.auction_name }}</h1>
+
+{% if a.item_image %}
+<style>
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
+<img src="{{ a.item_image }}" alt="Item Image" />
+{% endif %}
+
+<h2>{{ a.item_name }}</h2>
+<h3>{{ a.item_category }}</h3>
+<p>{{ a.item_description }}</p>
+
+{% if a.status != "Sold" %}
+  {% if a.currnet_bid_by is None %}
+    <p><strong>Starting Bid: ${{ a.starting_bid }}</strong></p>
+  {% else %}
+    <p><strong>Current Bid: ${{ a.current_bid }}</strong></p>
+  {% endif %}
+
+  {% if message_bid %}
+    <p>{{ message_bid }}</p>
+  {% endif %}
+
+<form action="{{ a.id }}" method="post">
+    {% csrf_token %}
+    <input type="text" name="bid" placeholder="Enter an amount to bid">
+    <input type="submit" name="submit" value="Place Bid">
+  </form>
+{% else %}
+  <p><strong>Item "{{ a.item_name }}" sold by user {{ a.sold_by }} at the price of ${{ a.current_bid }} to user {{ a.sold_to }}</strong></p>
+{% endif %}
+
+{% endblock %}
