@@ -72,7 +72,8 @@ def new_listing(request):
                 current_bid=starting_bid,
                 status=status,
                 sold_to=None,
-                item_category=item_category
+                item_category=item_category,
+                current_bid_by=None,
             )
             auction.save()
         except Exception as e:
@@ -121,32 +122,38 @@ def listing_page(request, auction_id):
         try:
             bid = float(request.POST["bid"])
         except Exception as e:
-            return render(request, "auction/listing_page.html", {
+            return render(request, "auctions/listing_page.html", {
+                "a": auction,
                 "message_bid": f"Bid needs to be a number: {e}"
             })
 
         if bid > auction.current_bid:
             auction.current_bid = bid
             auction.current_bid_by = request.user
-            return render(request, "auction/listing_page.html", {
+            auction.save()
+            return render(request, "auctions/listing_page.html", {
+                "a": auction,
                 "message_bid": f"Bid of ${auction.current_bid} placed successfully!"
             })
 
         elif (bid == auction.current_bid and
-              auction.starting_bid == auction.current_bid and
               auction.current_bid_by is None):
             auction.current_bid_by = request.user
-            return render(request, "auction/listing_page.html", {
+            auction.save()
+            return render(request, "auctions/listing_page.html", {
+                "a": auction,
                 "message_bid": f"Bid of ${auction.current_bid} placed successfully!"
             })
 
         else:
             return render(request, "auctions/listing_page.html", {
-                "message_bid": f"Ther starting bid has already been placed; Your bid must be higher than {auction.current_bid}"
+                "a": auction,
+                "message_bid": f"Your bid must be higher than {auction.current_bid}"
             })
 
     elif request.method == "POST" and not request.user:
         return render(request, "auctions/listing_page.html", {
+            "a": auction,
             "message_bid": "The user must be loged in to interact with the listings."
         })
 

@@ -17,7 +17,7 @@
 <p>{{ a.item_description }}</p>
 
 {% if a.status != "Sold" %}
-  {% if a.currnet_bid_by is None %}
+  {% if a.current_bid_by is None %}
     <p><strong>Starting Bid: ${{ a.starting_bid }}</strong></p>
   {% else %}
     <p><strong>Current Bid: ${{ a.current_bid }}</strong></p>
