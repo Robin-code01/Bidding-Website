@@ -16,6 +16,30 @@
 <h3>{{ a.item_category }}</h3>
 <p>{{ a.item_description }}</p>
 
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% if a not in user.watchlist %}
+<form action="{% url 'auctions:watchlist' %}" method="post">
+  {% csrf_token %}
+  <input type="submit" name="add_watchlist" value="Add To Watchlist">
+  <input type="hidden" name="auction_id" value="{{a.auction_id}}">
+</form>
+{% endif %}
+
+{% if a in user.watchlist %}
+<form action="{% url 'auctions:watchlist' %}" method="post">
+  {% csrf_token %}
+  <input type="submit" name="remove_watchlist" value="Remove From Watchlist">
+  <input type="hidden" name="auction_id" value="{{a.auction_id}}">
+</form>
+{% endif %}
+
 {% if a.status != "Sold" %}
   {% if a.current_bid_by is None %}
     <p><strong>Starting Bid: ${{ a.starting_bid }}</strong></p>
@@ -33,7 +57,18 @@
     <input type="submit" name="submit" value="Place Bid">
   </form>
 {% else %}
-  <p><strong>Item "{{ a.item_name }}" sold by user {{ a.sold_by }} at the price of ${{ a.current_bid }} to user {{ a.sold_to }}</strong></p>
+  <p><strong>Item "{{ a.item_name }}" sold by user {{ a.listed_by }} at the price of ${{ a.current_bid }} to user {{ a.sold_to }}</strong></p>
 {% endif %}
 
-{% endblock %}
+<form>
+  {% csrf_token %} 
+        <div class="form-group">
+            <label for="comment">Comment:</label>
+            <textarea class="form-control" id="comment" name="comment" placeholder="Write your comment here..." rows="4"></textarea>
+        </div>
+        <input type="submit" name="submit" class="btn btn-primary" value="Comment"> 
+</form>
+
+
+
+{% endblock%}

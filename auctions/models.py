@@ -33,13 +33,6 @@ class Auctions(models.Model):
         related_name="winning_bids"
     )
     status = models.CharField(max_length=4, default="Sale")
-    sold_by = models.ForeignKey(
-        User, blank=False,
-        null=True,
-        on_delete=models.CASCADE,
-        related_name="sold_items",
-        default=None,
-    )
     sold_to = models.ForeignKey(
         User, blank=True,
         null=True,

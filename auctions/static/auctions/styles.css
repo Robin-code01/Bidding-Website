@@ -1,3 +1,10 @@
 body {
-    padding: 10px;
+  padding: 10px;
+}
+
+details input {
+  display: none;
+}
+details[open] input {
+  display: inline-block;
 }

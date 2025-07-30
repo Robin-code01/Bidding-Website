@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from .models import User, Auctions, Bids, Comments
 
@@ -162,6 +163,19 @@ def listing_page(request, auction_id):
     })
 
 
-def watchlist(request, auction_id):
+def watchlist(request):
     if request.method == "POST":
-        pass
+        auction_id = request.POST["auction_id"]
+        auction = Auctions.objects.get(pk=auction_id)
+        if "add_watchlist" in request.POST:
+            request.user.watchlist.add(auction)
+            messages.success(request, f"Added {auction.auction_name} to yout watchlist")
+            return redirect('auctions:listing_page', auction_id=auction.pk)
+        elif "remove_watchlist" in request.POST:
+            request.user.watchlist.remove(auction)
+            messages.success(request, f"Removed {auction.auction_name} to yout watchlist")
+            return redirect('auctions:listing_page', auction_id=auction.pk)
+
+    return render(request, "auctions/watchlist.html", {
+        "wl": request.user.watchlist.all(),
+    })
