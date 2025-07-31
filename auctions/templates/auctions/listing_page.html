@@ -51,6 +51,7 @@
     <p>{{ message_bid }}</p>
   {% endif %}
 
+{% if user.is_authenticated %}
 <form action="{{ a.id }}" method="post">
     {% csrf_token %}
     <input type="text" name="bid" placeholder="Enter an amount to bid">
@@ -58,6 +59,7 @@
   </form>
 {% else %}
   <p><strong>Item "{{ a.item_name }}" sold by user {{ a.listed_by }} at the price of ${{ a.current_bid }} to user {{ a.sold_to }}</strong></p>
+{% endif %}
 {% endif %}
 
 {% if user.is_authenticated %}
