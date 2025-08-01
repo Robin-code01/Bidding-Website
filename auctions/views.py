@@ -214,6 +214,7 @@ def listing_page(request, auction_id):
     })
 
 
+@login_required
 def watchlist(request):
     if request.method == "POST":
         auction_id = request.POST["auction_id"]
@@ -234,6 +235,7 @@ def watchlist(request):
     })
 
 
+@login_required
 def comment(request):
     if request.method == "POST":
         try:
@@ -270,6 +272,7 @@ def comment(request):
     return redirect("/")
 
 
+@login_required
 def close(request):
     if request.method == "POST":
         auction_id = request.POST["auction_id"]
