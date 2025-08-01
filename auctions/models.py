@@ -49,10 +49,11 @@ class Auctions(models.Model):
 
 class Bids(models.Model):
     bid_id = models.BigAutoField(primary_key=True)
-    auction_id = models.ForeignKey(
+    auction = models.ForeignKey(
         Auctions, on_delete=models.CASCADE, related_name="auction_bids"
     )
     bid_amount = models.FloatField()
+    bid_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.bid_id}: ${self.bid_amount} for {self.auction_id}"

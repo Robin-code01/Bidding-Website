@@ -146,7 +146,14 @@ def register(request):
 
 
 def listing_page(request, auction_id):
-    comments = Comments.objects.all()
+    all_comments = Comments.objects.all()
+
+    comments = []
+
+    for c in all_comments:
+        if c.auction.auction_id == auction_id:
+            comments.append(c)
+
     auction = Auctions.objects.get(pk=auction_id)
     if request.method == "POST" and request.user:
 
@@ -162,7 +169,11 @@ def listing_page(request, auction_id):
         if bid > auction.current_bid:
             auction.current_bid = bid
             auction.current_bid_by = request.user
+
+            new_bid = Bids(auction=auction, bid_amount=bid)
+
             auction.save()
+            new_bid.save()
             return render(request, "auctions/listing_page.html", {
                 "a": auction,
                 "message_bid": f"Bid of ${auction.current_bid} placed successfully!",
@@ -172,7 +183,11 @@ def listing_page(request, auction_id):
         elif (bid == auction.current_bid and
               auction.current_bid_by is None):
             auction.current_bid_by = request.user
+
+            new_bid = Bids(auction=auction, bid_amount=bid)
+
             auction.save()
+            new_bid.save()
             return render(request, "auctions/listing_page.html", {
                 "a": auction,
                 "message_bid": f"Bid of ${auction.current_bid} placed successfully!",
@@ -186,7 +201,7 @@ def listing_page(request, auction_id):
                 "comments": comments,
             })
 
-    elif request.method == "POST" and not request.user:
+    elif request.method == "POST" and not request.user.is_authenticated:
         return render(request, "auctions/listing_page.html", {
             "a": auction,
             "message_bid": "The user must be loged in to interact with the listings.",

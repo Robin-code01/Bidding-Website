@@ -4,6 +4,7 @@
     <h2>Active Listings</h2>
 <ul>
     {% for auction in auctions %}
+      {% if auction.status != "Sold" %}
       <li>
         <h3><a href="{% url 'auctions:listing_page' auction.auction_id %}">{{ auction.auction_name }}</a></h3>
         {% if auction.item_image%}
@@ -18,9 +19,11 @@
         {% endif %}
         <h4>{{ auction.item_name }}</h4>
         <p><strong>Current Price: </strong>${{ auction.current_bid }}</p>
+        <p><strong>Description: </strong>{{ auction.item_description }}</p>
         <small>Created: {{ auction.listing_creation_time }}</small>
       </li>
       -------------------------------------
+      {% endif %}
     {% endfor %}
 </ul>
 {% endblock %}
